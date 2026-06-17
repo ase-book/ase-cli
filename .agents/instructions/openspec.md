@@ -64,6 +64,8 @@ If a new task is needed during implementation, add it and **renumber the section
 
 **Tasks SHALL be self-contained.** When a task group produces code, the NEXT task MUST verify it with positive and negative proof. Never group all tests at the end. Each section of tasks.md is a self-contained vertical slice: implement → prove → move on. See `docs/testing-convention.md` for positive/negative proof requirements (equivalence classes and boundaries).
 
+**Tasks SHALL name the AC IDs they cover.** A proof task carries the IDs it exercises in its text (e.g. `2.2 Positive tests: ... [ACID-001], [ACID-002]`), so tasks.md itself holds the spec-to-test trail and survives the archive.
+
 ### 3. Archive
 
 Run `/opsx:archive`. Delta specs merge into `openspec/specs/` (ADDED → appended, MODIFIED → replaced, REMOVED → deleted). The change folder moves to `changes/archive/YYYY-MM-DD-name/` to preserve history.
