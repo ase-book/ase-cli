@@ -23,6 +23,33 @@ def _write_test(base: Path, name: str, content: str) -> Path:
 
 
 # ---------------------------------------------------------------------------
+# Marker fixture builders
+#
+# The traceability checker scans every file under tests/ for marker patterns,
+# including this one. Building marker strings dynamically keeps the literal
+# pattern (e.g. the pytest mark.ac decorator with a quoted ID) out of this
+# file's source, so the FOO-/BAR- fixture IDs do not leak as orphaned markers
+# when `iec check` runs against this repo.
+# ---------------------------------------------------------------------------
+
+
+def _pytest_ac(ac_id: str, func: str = "test_it") -> str:
+    return f'@pytest.mark.ac("{ac_id}")\ndef {func}(): pass\n'
+
+
+def _junit_ac(ac_id: str) -> str:
+    return f'@Tag("{ac_id}")\nvoid test() {{}}\n'
+
+
+def _cucumber_ac(ac_id: str) -> str:
+    return f"@AC:{ac_id}\nScenario: ...\n"
+
+
+def _inline_ac(ac_id: str) -> str:
+    return f"// AC: {ac_id}\ndef test_it(): pass\n"
+
+
+# ---------------------------------------------------------------------------
 # Spec fixtures
 # ---------------------------------------------------------------------------
 
@@ -60,7 +87,7 @@ Test-type: Unit
 - **THEN** result
 """
 
-_PYTEST_FOO_001 = '@pytest.mark.ac("FOO-001")\ndef test_it(): pass\n'
+_PYTEST_FOO_001 = _pytest_ac("FOO-001")
 
 # ---------------------------------------------------------------------------
 # test-traceability
@@ -129,7 +156,7 @@ def test_traceability_pytest_marker(tmp_path: Path) -> None:
 def test_traceability_junit_tag(tmp_path: Path) -> None:
     """Covers: TRTC-007"""
     _write_spec(tmp_path, "my-spec", _SPEC_ONE_AC)
-    _write_test(tmp_path, "FooTest.java", '@Tag("FOO-001")\nvoid test() {}\n')
+    _write_test(tmp_path, "FooTest.java", _junit_ac("FOO-001"))
     result = test_traceability.TestTraceability().check(tmp_path)
     assert result.status == Status.PASS
 
@@ -139,7 +166,7 @@ def test_traceability_junit_tag(tmp_path: Path) -> None:
 def test_traceability_cucumber_tag(tmp_path: Path) -> None:
     """Covers: TRTC-008"""
     _write_spec(tmp_path, "my-spec", _SPEC_ONE_AC)
-    _write_test(tmp_path, "foo.feature", "@AC:FOO-001\nScenario: ...\n")
+    _write_test(tmp_path, "foo.feature", _cucumber_ac("FOO-001"))
     result = test_traceability.TestTraceability().check(tmp_path)
     assert result.status == Status.PASS
 
@@ -149,7 +176,7 @@ def test_traceability_cucumber_tag(tmp_path: Path) -> None:
 def test_traceability_inline_comment(tmp_path: Path) -> None:
     """Covers: TRTC-009"""
     _write_spec(tmp_path, "my-spec", _SPEC_ONE_AC)
-    _write_test(tmp_path, "test_foo.py", "// AC: FOO-001\ndef test_it(): pass\n")
+    _write_test(tmp_path, "test_foo.py", _inline_ac("FOO-001"))
     result = test_traceability.TestTraceability().check(tmp_path)
     assert result.status == Status.PASS
 
@@ -162,8 +189,7 @@ def test_traceability_orphaned_marker(tmp_path: Path) -> None:
     _write_test(
         tmp_path,
         "test_foo.py",
-        '@pytest.mark.ac("FOO-001")\ndef test_it(): pass\n'
-        '@pytest.mark.ac("BAR-999")\ndef test_orphan(): pass\n',
+        _pytest_ac("FOO-001") + _pytest_ac("BAR-999", func="test_orphan"),
     )
     result = test_traceability.TestTraceability().check(tmp_path)
     assert result.status == Status.WARN
@@ -222,8 +248,7 @@ def test_coverage_multiple_under_covered(tmp_path: Path) -> None:
     _write_test(
         tmp_path,
         "test_foo.py",
-        '@pytest.mark.ac("FOO-001")\ndef test_a(): pass\n'
-        '@pytest.mark.ac("FOO-002")\ndef test_b(): pass\n',
+        _pytest_ac("FOO-001", func="test_a") + _pytest_ac("FOO-002", func="test_b"),
     )
     result = test_coverage.TestCoverage().check(tmp_path)
     assert result.status == Status.WARN
