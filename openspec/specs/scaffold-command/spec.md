@@ -1,7 +1,7 @@
 # scaffold-command Specification
 
 ## Purpose
-TBD - created by archiving change ase-init. Update Purpose after archive.
+Define the Intent Engineering project structure created and maintained by `iec init`.
 ## Requirements
 ### Requirement: Init creates canonical directory structure
 The `iec init` command SHALL create the full canonical Intent Engineering directory structure in the target directory, including all subdirectories and stub files.
@@ -118,7 +118,7 @@ Test-type: unit
 - **THEN** the content defines the test layer taxonomy (Unit, Slice, Integration, E2E, Performance, Baseline, Architectural, Manual, Sanity)
 - **AND** defines the AC ID format (`[PREFIX-NNN]`)
 - **AND** defines the `Test-type:` field contract
-- **AND** defines positive/negative proof requirements
+- **AND** defines positive and negative evidence requirements
 - **AND** defines traceability marker conventions
 - **AND** is under 300 lines
 
@@ -159,4 +159,3 @@ Test-type: integration
 - **WHEN** `iec --version` is run
 - **THEN** the output matches the version in `pyproject.toml`
 - **AND** the command exits with code 0
-

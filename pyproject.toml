@@ -1,7 +1,7 @@
 [project]
 name = "iec-cli"
 dynamic = ["version"]
-description = "Intent Engineering practice validation CLI — deterministic + AI-assisted checks for agentic software engineering repos"
+description = "Intent Engineering validation CLI with deterministic and AI-assisted checks"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
